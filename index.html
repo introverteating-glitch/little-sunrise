@@ -1,0 +1,254 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Little Sunrise</title>
+<style>
+:root{--bg:#F1F4F2;--card:#FFFFFF;--ink:#1F2A2E;--mute:#5E6B68;--line:#D6E0DB;--sun:#E08A1E;--sunsoft:#FCEBD2;--calm:#3E7C6B}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141B1C;--card:#1D2627;--ink:#E9EFEC;--mute:#9AA8A4;--line:#2E3A3A;--sun:#F2A948;--sunsoft:#3A2C18;--calm:#7FC2AE}}
+:root[data-theme="dark"]{--bg:#141B1C;--card:#1D2627;--ink:#E9EFEC;--mute:#9AA8A4;--line:#2E3A3A;--sun:#F2A948;--sunsoft:#3A2C18;--calm:#7FC2AE}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 "Segoe UI","Microsoft JhengHei","PingFang TC",system-ui,sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:40px 16px 60px;display:grid;gap:22px}
+h1{font:700 clamp(30px,6vw,42px)/1.1 "Segoe UI","Microsoft JhengHei","PingFang TC",system-ui,sans-serif;margin:0;text-wrap:balance}
+h1 span{color:var(--sun)}
+.sub{color:var(--mute);margin:6px 0 0}
+label{font-weight:600;font-size:14px;letter-spacing:.03em}
+textarea{width:100%;box-sizing:border-box;min-height:120px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;resize:vertical}
+textarea:focus,button:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+button{font:600 15px "Segoe UI","Microsoft JhengHei",sans-serif;border:0;border-radius:999px;padding:11px 20px;cursor:pointer;background:var(--sun);color:#1F1405}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.out{background:var(--sunsoft);border-radius:16px;padding:22px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tag{font-size:12px;letter-spacing:.04em;padding:3px 10px;border-radius:999px;background:var(--card);color:var(--mute)}
+.msg{font:500 21px/1.4 "Segoe UI","Microsoft JhengHei",sans-serif;margin:0 0 10px;text-wrap:balance}
+.step{margin:0;color:var(--ink)}
+.step b{color:var(--calm)}
+.faith{margin:14px 0 0;padding-top:12px;border-top:1px dashed var(--line);font-size:15px;color:var(--mute);font-style:italic}
+.acts{margin:6px 0 0;padding-left:20px;display:grid;gap:4px}
+.ghostbtn{border:1px dashed var(--line);border-radius:999px;padding:9px 16px;cursor:pointer;font-size:14px}
+.pic{display:block;max-width:220px;max-height:220px;border-radius:12px;margin:0 0 12px}
+.memebox{margin:0 0 16px;display:grid;gap:10px}.memebox .pic{margin:0;width:100%;max-width:100%;max-height:420px;object-fit:contain;background:var(--card)}.memebox figcaption{display:grid;gap:4px}.memebox span{font-size:13px;color:var(--mute)}
+.care{border:1px solid var(--calm);border-radius:12px;padding:14px;font-size:15px}
+.hist h2{font:600 13px "Segoe UI","Microsoft JhengHei";letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 8px}
+.hist ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.hist li{border-top:1px solid var(--line);padding-top:8px;font-size:14px}
+.hist li i{color:var(--mute);font-style:normal;display:block}
+</style>
+</head><body><div class="wrap">
+  <div class="row" style="justify-content:flex-end"><button class="ghost" id="lang" aria-label="Switch language">中文</button></div>
+  <header><h1 data-i="h1"></h1><p class="sub" data-i="sub"></p></header>
+  <div style="display:grid;gap:8px">
+    <label for="in" data-i="lbl"></label>
+    <textarea id="in">I'm so tired of work, my boss keeps pushing and I feel useless.</textarea>
+  </div>
+  <div class="row"><button id="go" data-i="go"></button><button class="ghost" id="again" data-i="again"></button></div>
+  <div class="row" style="align-items:center"><label class="ghostbtn" for="pics" data-i="pics"></label><input id="pics" type="file" multiple webkitdirectory hidden><label class="ghostbtn" for="picf" data-i="picf"></label><input id="picf" type="file" accept="image/*,video/*,.gif,.webp,.mp4" multiple hidden><span class="sub" id="picsN" style="margin:0;font-size:13px"></span></div>
+  <section class="out" id="out" aria-live="polite"></section>
+  <section class="hist" id="histWrap" hidden><h2 data-i="hist"></h2><ul id="hist"></ul></section>
+  <footer class="sub" style="font-size:14px;border-top:1px solid var(--line);padding-top:14px" data-i="foot"></footer>
+</div>
+<script>
+const UI={
+ en:{h1:'Say the heavy thing.<br>Get a <span>lighter</span> one back.',sub:"Type how you feel, in English or 中文. Nothing leaves your browser.",lbl:"What's weighing on you?",go:"Brighten it",again:"Another one",hist:"Your brighter notes",pics:"Choose my sticker folder",picf:"Or pick image files",picsN:" stickers loaded",pics0:"No images found — try “Or pick image files”.",try:"Try this:",empty:"Write a few words first — even one is enough.",
+  foot:'Inspired by <a style="color:var(--calm)" href="https://www.shallwetalk.hk/zh/" target="_blank" rel="noopener">陪我講 Shall We Talk</a>, Hong Kong\'s mental wellness initiative. Need to talk to a person? Call 情緒通 18111 (24 hours).',
+  care:'<p class="msg" style="font-size:19px">I\'m really glad you wrote this down. What you\'re feeling deserves real support, not just nice words.</p><p class="step">Please reach out to someone you trust or a hotline now. In Hong Kong: <b>情緒通 18111</b> · <b>Samaritan Befrienders 2389 2222</b> · <b>The Samaritans 2896 0000</b> (24 hours). If you\'re in danger, call <b>999</b>.</p>'},
+ zh:{h1:'把沉重的說出來，<br>換一句<span>輕鬆</span>的回來。',sub:"用中文或英文寫下你的感受。內容只會留在你的瀏覽器。",lbl:"有甚麼令你覺得沉重？",go:"轉個角度",again:"再來一句",hist:"你的暖心小語",pics:"選擇我的貼圖資料夾",picf:"或直接揀圖片",picsN:" 張貼圖已載入",pics0:"搵唔到圖片，試下「或直接揀圖片」。",try:"試試看：",empty:"先寫幾個字吧，一個字也可以。",
+  foot:'靈感來自 <a style="color:var(--calm)" href="https://www.shallwetalk.hk/zh/" target="_blank" rel="noopener">陪我講 Shall We Talk</a>（香港精神健康推廣計劃）。想找人傾訴？請致電情緒通 18111（24小時）。',
+  care:'<p class="msg" style="font-size:19px">很高興你願意把這些寫出來。你現在的感受值得真正的支援，而不只是一句好說話。</p><p class="step">請立即聯絡你信任的人或求助熱線。香港：<b>情緒通 18111</b> · <b>撒瑪利亞防止自殺會 2389 2222</b> · <b>撒瑪利亞會 2896 0000</b>（24小時）。如有即時危險，請致電 <b>999</b>。</p>'}
+};
+const G={
+ tired:{k:["tired","exhausted","drained","burn","sleepy","no energy","累","攰","疲倦","好殘","冇力"],label:["Tired","疲倦"],m:[["Tired means you've been showing up. That counts.","累，代表你一直有努力堅持，這很了不起。"],["Your battery isn't broken — it's asking for a recharge.","你不是壞掉了，只是電量低，需要充充電。"],["Rest isn't quitting. It's refuelling for the good parts ahead.","休息不是放棄，是為之後的美好加油。"],["You've carried a lot today. Put a little of it down.","今天你背負了很多，放下一點點吧。"]],s:["Drink some water and close your eyes for 2 minutes.","喝一杯水，閉上眼睛休息兩分鐘。"]},
+ sad:{k:["sad","cry","down","upset","heartbroken","unhappy","depress","傷心","唔開心","難過","喊","失落"],label:["Sad","難過"],m:[["Sad days are real, and so are the softer ones coming.","難過的日子是真的，溫柔的日子也快要來了。"],["It's okay to feel this. Feelings pass through; they don't define you.","有這種感受沒關係。情緒會經過，但不會定義你。"],["Even grey skies have light behind them.","再灰的天空，背後都有陽光。"],["You're allowed to be gentle with yourself right now.","此刻，你可以對自己溫柔一點。"]],s:["Name one small thing that went okay today.","說出今天一件還算不錯的小事。"]},
+ stress:{k:["stress","anxious","anxiety","pressure","overwhelm","panic","worried","deadline","壓力","焦慮","擔心","好忙","頂唔順"],label:["Stressed","壓力"],m:[["One thing at a time. You don't have to solve it all tonight.","一次處理一件事就好，不用今晚全部解決。"],["Pressure means it matters to you — and you care deeply.","有壓力，是因為你很在乎。"],["Breathe first. The to-do list can wait 60 seconds.","先呼吸。待辦清單可以等你一分鐘。"],["You've handled hard weeks before. This one's no different.","以前難捱的日子你都撐過了，這次也可以。"]],s:["Breathe in for 4, hold for 4, out for 6. Repeat three times.","吸氣4秒、停4秒、呼氣6秒，重複三次。"]},
+ job:{k:["work","job","boss","office","colleague","manager","meeting","返工","工作","老闆","同事","公司","上司"],label:["Work","工作"],m:[["Your worth is bigger than any job title or inbox.","你的價值，遠大於任何職銜或郵箱。"],["One tough day at work isn't a verdict on your career.","一天工作不順，不代表你的事業不好。"],["You're doing more than anyone notices — including you.","你做的比別人看到的多，連你自己也未必察覺。"],["Clock out in your head too. You've earned the evening.","下班了，腦袋也一起下班吧。今晚是你應得的。"]],s:["Write the one work task that matters most tomorrow, then let the rest go.","寫下明天最重要的一件工作，其他的先放下。"]},
+ family:{k:["family","mom","mum","dad","parent","husband","wife","kids","sister","brother","屋企","家人","媽媽","爸爸","老公","老婆","家"],label:["Family","家人"],m:[["Caring this much about family shows how big your heart is.","這麼在乎家人，說明你有一顆很大的心。"],["You can love people and still need a little space. Both are fine.","愛一個人，同時需要一點空間，兩者都沒問題。"],["Home can feel heavy sometimes; it doesn't erase the warmth.","家有時會令人覺得沉重，但溫暖一直都在。"],["You don't have to fix everyone. Taking care of you helps them too.","你不用解決所有人的問題。照顧好自己，也是在照顧他們。"]],s:["Take a 10-minute walk alone, just for you.","獨自散步十分鐘，只屬於你自己。"]},
+ self:{k:["useless","failure","stupid","not good enough","hate myself","worthless","loser","廢","冇用","沒用","失敗","唔夠好"],label:["Self-doubt","自我懷疑"],m:[["You're not useless — you're tired and being hard on yourself.","你不是沒用，只是累了，又對自己太嚴苛。"],["A bad moment is not a bad person.","一個不好的時刻，不等於你是一個不好的人。"],["Talk to yourself like you'd talk to a friend. They'd say you're doing fine.","像對朋友一樣對自己說話吧，他們會說你做得很好。"],["Progress is quiet. You're further along than it feels.","進步是安靜的，你其實比你感覺的走得更遠。"]],s:["List three things you've done this week, however small.","列出這星期你完成的三件事，再小也算。"]},
+ lonely:{k:["lonely","alone","no one","nobody","ignored","孤獨","寂寞","冇人","沒有人"],label:["Lonely","孤單"],m:[["Feeling alone doesn't mean you are. Someone would love to hear from you.","覺得孤單，不代表你真的孤單。有人會很想收到你的消息。"],["You matter, even on the quiet days.","即使在安靜的日子，你依然很重要。"],["Reaching out is brave — and people often feel the same.","主動聯絡別人很勇敢，而且對方可能也有同樣感受。"],["This feeling is a signal to connect, not a sign you're unwanted.","這種感覺是提醒你去連結，而不是代表沒人需要你。"]],s:["Send a simple \"thinking of you\" to one person.","傳一句「想起你」給一個人。"]},
+ angry:{k:["angry","annoyed","mad","frustrat","hate","unfair","嬲","火滾","煩","討厭","生氣","不公平"],label:["Frustrated","煩躁"],m:[["Your frustration makes sense — something mattered to you.","你的不滿是合理的，因為有些事對你很重要。"],["Let the heat pass before you decide anything. You'll see clearer.","讓怒氣先過去再做決定，你會看得更清楚。"],["It's okay to be annoyed. You don't have to carry it all night.","覺得煩沒關係，但不用整晚背著它。"],["Anger is energy. Point it at something that helps you.","憤怒也是能量，把它用在對你有幫助的事上。"]],s:["Shake out your hands and unclench your jaw.","甩甩雙手，放鬆你的下顎。"]}
+};
+const GEN={label:["Just heavy","有點沉重"],m:[["Whatever it is, you don't have to hold it alone.","無論是甚麼，你都不用獨自承擔。"],["You made it through every hard day so far. That's a perfect record.","到目前為止，每個難關你都撐過了，這是滿分紀錄。"],["Small steps still move you forward.","小小的一步，也是在向前走。"],["Be kind to yourself today — you're doing your best.","今天對自己好一點，你已經盡力了。"]],s:["Step outside or open a window for one minute of fresh air.","走出去或打開窗，呼吸一分鐘新鮮空氣。"]};
+const CRISIS=["suicide","kill myself","end my life","want to die","self harm","hurt myself","自殺","想死","唔想活","不想活","傷害自己"];
+const FAITH={
+ Tired:{v:["“Come unto me, all ye that labour and are heavy laden, and I will give you rest.” — Matthew 11:28","「凡勞苦擔重擔的人可以到我這裡來，我就使你們得安息。」——馬太福音 11:28"],st:["Elijah was so worn out he lay under a tree. God didn't lecture him — He let him sleep and gave him bread first. (1 Kings 19)","以利亞累得躺在羅騰樹下。神沒有責備他，先讓他睡覺，又給他餅吃。（列王紀上 19）"]},
+ Sad:{v:["“The LORD is nigh unto them that are of a broken heart.” — Psalm 34:18","「耶和華靠近傷心的人。」——詩篇 34:18"],st:["At his friend Lazarus's tomb, Jesus wept. Tears aren't weakness — even He cried. (John 11:35)","在朋友拉撒路的墳前，耶穌哭了。流淚不是軟弱，連祂也會哭。（約翰福音 11:35）"]},
+ Stressed:{v:["“Be careful for nothing; but in every thing by prayer… let your requests be made known unto God.” — Philippians 4:6","「應當一無掛慮，只要凡事藉著禱告、祈求，和感謝，將你們所要的告訴神。」——腓立比書 4:6"],st:["A storm hit the boat and the disciples panicked. Jesus stood up and said, “Peace, be still” — and it was calm. (Mark 4)","風浪襲來，門徒驚慌失措。耶穌起來說：「住了吧！靜了吧！」風就止住了。（馬可福音 4）"]},
+ Work:{v:["“Whatsoever ye do, do it heartily, as to the Lord, and not unto men.” — Colossians 3:23","「無論做甚麼，都要從心裡做，像是給主做的，不是給人做的。」——歌羅西書 3:23"],st:["Peter fished all night and caught nothing. He tried once more — and the nets nearly broke. (Luke 5)","彼得整夜打魚，一無所獲。他再下一次網，網差點破了。（路加福音 5）"]},
+ Family:{v:["“Charity suffereth long, and is kind.” — 1 Corinthians 13:4","「愛是恆久忍耐，又有恩慈。」——哥林多前書 13:4"],st:["When the lost son came home, his father didn't wait — he ran to hug him. (Luke 15)","浪子回家時，父親沒有等他開口，就跑去抱住他。（路加福音 15）"]},
+ "Self-doubt":{v:["“I will praise thee; for I am fearfully and wonderfully made.” — Psalm 139:14","「我要稱謝你，因我受造奇妙可畏。」——詩篇 139:14"],st:["Moses said he wasn't good with words. God still chose him to lead a whole nation. (Exodus 4)","摩西說自己拙口笨舌，神仍然揀選他帶領整個民族。（出埃及記 4）"]},
+ Lonely:{v:["“I will never leave thee, nor forsake thee.” — Hebrews 13:5","「我總不撇下你，也不丟棄你。」——希伯來書 13:5"],st:["Hagar was alone in the desert and crying. God heard her and opened her eyes to a well of water. (Genesis 21)","夏甲獨自在曠野哭泣。神聽見了，使她看見一口水井。（創世記 21）"]},
+ Frustrated:{v:["“Be ye angry, and sin not: let not the sun go down upon your wrath.” — Ephesians 4:26","「生氣卻不要犯罪；不可含怒到日落。」——以弗所書 4:26"],st:["Joseph's brothers sold him as a slave. Years later he forgave them and said, “Ye thought evil against me; but God meant it unto good.” (Genesis 50)","約瑟被哥哥們賣作奴隸。多年後他饒恕他們，說：「從前你們的意思是要害我，但神的意思原是好的。」（創世記 50）"]},
+ "Just heavy":{v:["“Fear thou not; for I am with thee.” — Isaiah 41:10","「你不要害怕，因為我與你同在。」——以賽亞書 41:10"],st:["Young David faced a giant with just a sling and five stones — small, but not alone. (1 Samuel 17)","少年大衛只帶著機弦和五塊石子面對巨人。他很渺小，卻不孤單。（撒母耳記上 17）"]}
+};
+const $=id=>document.getElementById(id);let hist=[],L="en";
+try{hist=JSON.parse(localStorage.getItem("ls-hist")||"[]");L=localStorage.getItem("ls-lang")||(navigator.language.startsWith("zh")?"zh":"en")}catch(e){}
+const I=L=>L==="zh"?1:0;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+let last=null;
+function applyUI(){const u=UI[L];document.documentElement.lang=L==="zh"?"zh-Hant-HK":"en";
+ document.querySelectorAll("[data-i]").forEach(el=>el.innerHTML=u[el.dataset.i]);
+ $("lang").textContent=L==="zh"?"English":"中文";render();draw();}
+const SIT=[
+ {sit:"overtime",k:["overtime","ot ","stay late","加班","OT","做到好夜","留低"],f:"Work",feel:["Drained and unseen","好攰又唔被體諒"],
+  v:["Being asked to stay late again eats into the only time that's really yours — of course that stings.","又被叫加班，本來屬於自己的時間又被拿走，會唔開心好正常。"],
+  r:["Being asked shows they rely on you. Relied on doesn't mean always available — you're allowed to ask what's truly urgent.","被叫加班，代表老闆信得過你；但被信任不等於要隨時候命，你有權問清楚甚麼才是真正急。"],
+  a:[["Ask: “Which of these must be done tonight, and what can wait till tomorrow?”","問一句：「邊樣今晚一定要做？邊樣可以聽日先做？」"],["Set a finish time and tell them: “I can stay until 8pm.”","定個收工時間，講清楚：「我今日最多做到八點。」"],["Plan one small treat for after — a snack or a show on the way home.","為收工後準備一個小獎勵，例如宵夜或返屋企路上睇套劇。"]]},
+ {sit:"blame",k:["scold","yell","blame","criticis","shout","罵","鬧","怪我","屈","冤枉","批評","黑面"],f:"Work",feel:["Hurt and embarrassed","委屈又難堪"],
+  v:["Being criticised, especially in front of others, hits hard — it's natural to replay it.","被人罵，尤其係當眾，心入面會好難受，不停回想都好正常。"],
+  r:["Their words are about a task or their pressure, not your whole worth. You can take what's useful and leave the tone behind.","佢嘅說話講緊一件事或者佢自己嘅壓力，唔係你成個人嘅價值。有用嘅留低，語氣就放低。"],
+  a:[["Write down the one point that's actually fixable.","寫低入面真正可以改善嘅一點。"],["Take a 5-minute walk before replying to anyone.","回覆任何人之前，先行開五分鐘。"],["Tell a friend what happened — say it out loud once.","同一個朋友講出嚟，講一次就好。"]]},
+ {sit:"busy",k:["deadline","too much work","workload","so busy","做唔完","好多嘢做","死線","好忙"],f:"Stressed",feel:["Overwhelmed","喘唔到氣"],
+  v:["When everything lands at once, your brain treats it all as urgent. No wonder it feels heavy.","所有事一齊嚟，個腦會當晒全部都好急，覺得沉重係自然嘅。"],
+  r:["You don't have a “too much” problem right now — you have a “what's first” question. That one is solvable.","你而家唔係「太多嘢」，而係「邊樣先」嘅問題，而呢個係解決得到嘅。"],
+  a:[["List everything, then star only the top 3.","全部寫低，然後只圈出最重要三樣。"],["Work 25 minutes on #1, then 5 minutes off.","專心做第一樣25分鐘，再休息5分鐘。"],["Tell someone which item will be late — before it's late.","預早話俾人知邊樣會遲，唔好等到遲咗先講。"]]},
+ {sit:"quit",k:["quit","resign","hate my job","辭職","劈炮","唔想返工","唔想做"],f:"Work",feel:["Stuck and fed up","困住咗、好厭倦"],
+  v:["Dreading work every day wears you down — wanting out is a real signal, not weakness.","日日都怕返工真係好消耗，想離開係一個訊號，唔係軟弱。"],
+  r:["You don't have to decide tonight. Treat this feeling as information about what you need next.","今晚唔使決定。將呢種感覺當作資料，話你知自己下一步需要乜。"],
+  a:[["Write what drains you most, and what you'd keep.","寫低最消耗你嘅係乜，同埋有乜想保留。"],["Update your CV for 20 minutes — just to feel options exist.","花20分鐘更新CV，只係提醒自己有選擇。"],["Talk it through with someone outside the company.","同公司以外嘅人傾下。"]]},
+ {sit:"argue",k:["argue","fight","quarrel","parents","mom","mum","dad","嗌交","吵架","阿媽","媽媽","爸爸","老豆","屋企人","家人"],f:"Family",feel:["Hurt and tense","受傷又繃緊"],
+  v:["Conflict with family hurts more because you care — and you can't just walk away.","同屋企人有磨擦特別痛，因為你在乎，又唔可以一走了之。"],
+  r:["An argument is a moment, not the whole relationship. Both of you may want the same thing — to feel understood.","一次嗌交只係一刻，唔係成段關係。其實雙方可能都只係想被明白。"],
+  a:[["Take space first: “I need 20 minutes, then let's talk.”","先俾大家空間：「我想靜20分鐘，之後再傾。」"],["Start with “I feel…” instead of “You always…”.","用「我覺得……」開頭，唔好講「你成日都……」。"],["Send one kind message later, even if nothing's solved.","遲啲傳一句好說話，就算未解決都好。"]]},
+ {sit:"breakup",k:["breakup","broke up","ex ","boyfriend","girlfriend","partner","分手","男朋友","女朋友","另一半","拍拖"],f:"Sad",feel:["Heartbroken","心好痛"],
+  v:["Losing or struggling with someone close shakes your whole day — the ache is real.","同最親近嘅人出問題，會搖動你成日嘅生活，痛係真實嘅。"],
+  r:["Pain this big shows how much you can love. That capacity stays with you.","痛得咁深，證明你有好大嘅愛人能力，而呢份能力會一直留喺你身上。"],
+  a:[["Mute or archive their chat for a few days.","暫時將對方嘅對話靜音或封存幾日。"],["Eat one proper meal and sleep before big decisions.","做大決定之前，先食一餐好嘅、瞓一覺。"],["Meet one friend this week, even for coffee.","今個星期約一個朋友，飲杯咖啡都好。"]]},
+ {sit:"exam",k:["exam","test","study","grade","assignment","考試","測驗","溫書","功課","論文","成績"],f:"Stressed",feel:["Anxious about results","擔心成績"],
+  v:["Exams make it feel like one result decides everything — that pressure is exhausting.","考試令人覺得一個分數決定晒一切，壓力好大好攰。"],
+  r:["A grade measures one day's performance, not your intelligence or future.","分數量度嘅係一日嘅表現，唔係你嘅聰明或者將來。"],
+  a:[["Pick one topic, study 30 minutes, then stop.","揀一個課題，溫30分鐘就停。"],["Sleep matters more than one extra hour of revision.","瞓足比多溫一個鐘更重要。"],["Ask a classmate or teacher about the one part you're stuck on.","將卡住嗰部分問同學或者老師。"]]},
+ {sit:"money",k:["money","rent","bills","broke","debt","錢","租","交唔起","負債","洗費","卡數"],f:"Stressed",feel:["Worried about money","為錢擔心"],
+  v:["Money worry follows you everywhere — it's hard to relax when numbers keep circling.","為錢擔心會一直跟住你，數字不停喺腦入面轉，好難放鬆。"],
+  r:["Seeing the real numbers is usually less scary than the fog of not knowing.","面對真實數字，通常冇「唔知道」咁可怕。"],
+  a:[["Write this month's income and fixed costs on one page.","將今個月收入同固定開支寫喺一頁紙。"],["Cancel one subscription you don't use.","取消一個冇用開嘅訂閱。"],["If it's serious, ask a bank or debt-advice service about options.","如果情況嚴重，向銀行或理財輔導服務查詢方案。"]]},
+ {k:["can't sleep","insomnia","no sleep","瞓唔着","失眠","瞓唔到"],f:"Tired",feel:["Wired but exhausted","好攰但瞓唔着"],
+  v:["Lying awake while your mind races is lonely and frustrating.","夜晚個腦停唔到、瞓唔着，又孤單又煩。"],
+  r:["You don't have to force sleep. Resting quietly still helps your body.","唔使逼自己瞓着，靜靜哋休息對身體都有幫助。"],
+  a:[["Put your phone across the room.","將手機放遠啲。"],["Write tomorrow's worries on paper, then close the notebook.","將聽日嘅擔心寫落紙，然後合埋本簿。"],["Breathe in 4, out 6, for ten rounds.","吸氣4秒、呼氣6秒，做十次。"]]},
+ {k:["lonely","alone","no friends","nobody","孤獨","寂寞","冇朋友","冇人"],f:"Lonely",feel:["Lonely","孤單"],
+  v:["Feeling no one's around is one of the heaviest feelings there is.","覺得身邊冇人，係最沉重嘅感受之一。"],
+  r:["Loneliness is a need for connection, not proof you're unlikeable.","孤單係需要連結嘅訊號，唔係證明你唔討人喜歡。"],
+  a:[["Message one person: “Thinking of you — how are you?”","傳訊息俾一個人：「諗起你，最近點呀？」"],["Go somewhere with people nearby — a café or library.","去一個有人嘅地方，例如咖啡店或圖書館。"],["Call 陪我講 / 情緒通 18111 if you want to talk now.","想即刻搵人傾，可以打情緒通 18111。"]]}
+];
+function localAI(t){const lo=t.toLowerCase(),zh=I(L);
+ let m=SIT.find(x=>x.k.some(w=>lo.includes(w.toLowerCase())));
+ if(!m){const hit=Object.values(G).filter(g=>g.k.some(w=>lo.includes(w)));const g=hit.length?hit[0]:GEN;
+  m={f:g.label[0],feel:g.label,v:[["That sounds heavy to carry.","聽落真係好沉重。"],["It makes sense you feel this way.","你有咁嘅感受係好合理嘅。"]][Math.random()*2|0],r:pick(g.m),a:[g.s]};}
+ const fa=FAITH[m.f]||FAITH["Just heavy"],vs=fa.v[zh].split(/ — |——/);
+ return {sit:m.sit,key:m.f,feeling:m.feel[zh],validate:m.v[zh],reframe:m.r[zh],actions:m.a.map(x=>x[zh]),verse:{text:vs[0],ref:vs[1]||""},story:fa.st[zh]};}
+let PICS=[];
+const PK={Tired:["tired","sleep","攰","累","瞓"],Sad:["sad","cry","喊","傷心"],Stressed:["stress","busy","panic","壓力","忙"],Work:["work","boss","ot","返工","加班","老闆"],Family:["family","home","屋企","家"],Lonely:["lonely","alone","hug","孤","抱"],Frustrated:["angry","mad","嬲","煩"],"Self-doubt":["cheer","加油","fighting","good"]};
+const MEMES=[
+ {id:"屈我啦",file:"屈我啦.webp",src:["Hong Kong Cantonese meme — origin not confirmed","香港廣東話梗圖（出處未能確認）"],
+  mean:["Sarcastic “Go on, frame me then” — used when you're wrongly blamed and feel helpless.","反話式「好啦，你屈我啦」——被人冤枉、有口難言時用。"],
+  use:["blame","scold","Work","Frustrated","Self-doubt"],kw:["屈","冤枉","怪我","罵","鬧","blame","scold","accuse","fault"],
+  line:["Being blamed for something that isn't yours? That's on them, not you.","俾人屈咗？錯唔喺你，唔使孭上身。"]},
+ {id:"佢黐Q咗綫呀",file:"佢黐Q咗綫呀！.png",src:["Hong Kong Cantonese meme — origin not confirmed","香港廣東話梗圖（出處未能確認）"],
+  mean:["“He's lost his mind!” — reacting to someone's unreasonable demand or crazy behaviour.","「佢癲咗呀！」——對住無理要求或者離譜行為嘅反應。"],
+  use:["overtime","Work","Stressed","Frustrated"],kw:["加班","OT","老闆","上司","無理","離譜","癲","overtime","boss","crazy","unreasonable"],
+  line:["When the request is this unreasonable, feeling annoyed is completely normal.","要求離譜到咁，你覺得佢黐線都好正常。"]},
+ {id:"你快點回火星吧",file:"你快點回火星吧,地球是很危險的.jpg",src:["Stephen Chow, Shaolin Soccer (少林足球)","周星馳《少林足球》"],
+  mean:["“Go back to Mars, Earth is dangerous” — a funny way to dismiss someone who's out of touch or behaving absurdly.","「快啲返火星啦，地球好危險」——笑住打發一個離地或者行為古怪嘅人。"],
+  use:["Frustrated","Family","Just heavy","Lonely"],kw:["離地","唔明","聽唔明","古怪","火星","out of touch","weird","doesn't understand"],
+  line:["Some people just aren't on your planet today. Let them orbit — you don't have to explain yourself.","有啲人今日同你唔喺同一個星球，由佢啦，你唔使解釋咁多。"]},
+ {id:"你大我呀",file:"你大我呀.jpg",src:["Hong Kong Cantonese meme — origin not confirmed","香港廣東話梗圖（出處未能確認）"],
+  mean:["“Oh, so you're the boss of me?” — pushing back when someone bosses you around.","「你大我呀？」——有人對你呼呼喝喝、擺上司款時嘅反擊。"],
+  use:["overtime","blame","Work","Frustrated"],kw:["命令","呼喝","指使","擺款","上司","老闆","order","bossy","boss"],
+  line:["Being ordered around doesn't make you smaller. You can be polite and still say no.","俾人呼呼喝喝唔代表你細過人，有禮貌都可以講「唔得」。"]},
+ {id:"可以 先付錢",file:"可以 先付錢.jpg",src:["Hong Kong Cantonese meme — origin not confirmed","香港廣東話梗圖（出處未能確認）"],
+  mean:["“Sure — pay first.” — a cheeky reply when someone wants a favour or extra work for free.","「可以，先俾錢。」——有人想你免費幫手、做多嘢時嘅幽默回應。"],
+  use:["money","overtime","Work"],kw:["幫手","免費","人情","人工","錢","加班費","favour","free","pay","salary","money"],
+  line:["Your time has value. It's fine to ask what you get in return.","你嘅時間有價值，問一句「有咩回報」好合理。"]},
+ {id:"好難捉摸呀",file:"好難捉摸呀.jpg",src:["Hong Kong Cantonese meme — origin not confirmed","香港廣東話梗圖（出處未能確認）"],
+  mean:["“So hard to figure out!” — when someone's mood or instructions keep changing.","「好難捉摸呀！」——對方情緒或者指示變來變去，完全估唔到。"],
+  use:["breakup","Work","Frustrated","Stressed"],kw:["估唔到","變來變去","反口","唔知佢想點","難搞","心情","confusing","changing","mixed signals"],
+  line:["If they keep changing, the confusion isn't your fault. Ask them to say it clearly.","佢變來變去，你摸唔透唔係你嘅錯；叫佢講清楚就得。"]},
+ {id:"不要再說了",file:"不要再說了.webp",src:["Chinese internet meme — origin not confirmed","中文網絡梗圖（出處未能確認）"],
+  mean:["“Please, stop talking.” — when you've heard enough nagging or bad news.","「唔好再講喇！」——聽夠晒嘮叨或者壞消息。"],
+  use:["argue","Family","Stressed","Frustrated"],kw:["嘮叨","長氣","講極","催","唔好再講","nag","nagging","lecture","keep talking"],
+  line:["It's okay to ask for a pause. “Can we talk about this later?” is enough.","你可以要求停一停，一句「遲啲再傾好唔好？」已經夠。"]},
+ {id:"第一次？",file:"第一次？.png",src:["Internet meme “First time?”","網絡梗圖「第一次？」"],
+  mean:["“First time?” — a calm veteran shrugging at a crisis: it feels huge now, but you'll get through it.","「第一次？」——老手淡定面對危機：而家覺得好大件事，其實捱得過。"],
+  use:["exam","Stressed","Work","Sad"],kw:["第一次","新工","新人","慌","緊張","first time","new job","nervous","panic"],
+  line:["Everyone's first time feels this scary. Next time you'll be the calm one.","第一次一定驚，下次你就係嗰個淡定嘅人。"]},
+ {id:"我告訴你，你今天贏的機會是零",file:"我告訴你，你今天贏的機會是零.png",src:["Hong Kong film-style meme — origin not confirmed","香港電影式梗圖（出處未能確認）"],
+  mean:["“Let me tell you, your chance of winning today is zero.” — mock-dramatic when the odds feel stacked against you.","「我話你知，你今日贏嘅機會係零。」——覺得形勢一面倒、點都輸時嘅誇張反應。"],
+  use:["exam","Self-doubt","Frustrated"],kw:["輸","冇機會","贏","比賽","冇可能","lose","no chance","competition","impossible"],
+  line:["Feeling like you've already lost isn't the same as losing. Play one more round.","覺得輸定，唔等於真係輸；再試多一次先講。"]},
+ {id:"我嘅訴求就係想返工",file:"我嘅訴求就係想返工.png",src:["Hong Kong Cantonese meme — origin not confirmed","香港廣東話梗圖（出處未能確認）"],
+  mean:["“My only demand is to go to work.” — ironic line for when everything else is chaos and you just want normal life.","「我嘅訴求就係想返工。」——身邊一團糟、只想生活回復正常時嘅反諷。"],
+  use:["quit","Work","Stressed","Just heavy"],kw:["返工","正常","亂","唔想返工","想放假","normal","chaos","go to work"],
+  line:["Wanting things to feel normal again is a very reasonable wish.","想生活回復正常，係一個好合理嘅願望。"]},
+ {id:"揮手歡送",file:"揮手歡送.mp4",src:["Reaction clip — origin not confirmed","反應短片（出處未能確認）"],
+  mean:["Waving someone off — a cheerful goodbye to a job, a person or a bad habit.","揮手歡送——開心咁同一份工、一個人或者一個壞習慣講拜拜。"],
+  use:["quit","breakup","Lonely"],kw:["辭職","劈炮","走","拜拜","分手","離開","bye","quit","resign","leave","goodbye"],
+  line:["Some goodbyes are a fresh start. Wave it off and walk lighter.","有啲拜拜其實係新開始，揮揮手，行輕啲。"]}
+];
+const LOCAL=MEMES.map(m=>({name:m.file,url:encodeURI(m.file)}));
+PICS=[];
+const STOP=new Set([..."我你佢咗嘅呀啦吧的了是很在有個人好唔都就又"]);
+function overlap(a,b){const A=new Set([...a].filter(c=>/[\u4e00-\u9fff]/.test(c)&&!STOP.has(c)));let n=0;for(const c of new Set(b))if(A.has(c))n++;return n}
+function memeFor(name){return MEMES.find(m=>name.includes(m.id))}
+function pickMeme(key,sit,text,aiId){if(!PICS.length)return null;const lo=(text||"").toLowerCase();
+ const have=MEMES.filter(m=>PICS.some(f=>f.name.includes(m.id)));
+ let m=aiId&&have.find(x=>x.id===aiId);
+ if(!m){let best=0,c=[];for(const x of have){const sc=3*x.kw.filter(k=>lo.includes(k.toLowerCase())).length+2*(x.use.includes(sit)?1:0)+(x.use.includes(key)?1:0);if(sc>best){best=sc;c=[x]}else if(sc&&sc===best)c.push(x)}if(c.length)m=pick(c)}
+ if(m)return {url:PICS.find(f=>f.name.includes(m.id)).url,meme:m};
+ const u=pickPic(key,text,1);return u?{url:u}:null}
+function pickPic(key,text,strict){if(!PICS.length)return null;
+ if(text){let best=0,hits=[];for(const f of PICS){const sc=overlap(f.name.replace(/\.[a-z]+$/i,""),text);if(sc>best){best=sc;hits=[f]}else if(sc&&sc===best)hits.push(f)}if(hits.length)return pick(hits).url}const ks=PK[key]||[];const m=PICS.filter(f=>ks.some(k=>f.name.toLowerCase().includes(k))||(memeFor(f.name)?.use||[]).includes(key));if(strict&&!m.length)return null;return pick(m.length?m:PICS).url}
+function loadPics(e){const fs=[...e.target.files].filter(f=>/\.(png|jpe?g|gif|webp|bmp|avif|mp4|webm|mov)$/i.test(f.name)||/^(image|video)\//.test(f.type));if(!fs.length){document.getElementById("picsN").textContent=UI[L].pics0;return}
+ PICS.forEach(p=>URL.revokeObjectURL(p.url));PICS=fs.map(f=>({name:f.name,url:URL.createObjectURL(f)}));document.getElementById("picsN").textContent=PICS.length+UI[L].picsN;if(last?.ai){last.pic=null;render()}}
+document.getElementById("pics").onchange=loadPics;document.getElementById("picf").onchange=loadPics;
+let sampler=null;window.claude?.use?.("sample").then(x=>sampler=x).catch(()=>{});
+let busy=null;
+const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+async function run(){
+ const t=$("in").value.trim(),lo=t.toLowerCase();
+ if(!t||CRISIS.some(w=>lo.includes(w)))return runLocal();
+ if(!sampler){{const a=localAI(t);last={ai:a,local:1,key:a.key};return render()}}
+ busy?.abort();busy=new AbortController();
+ $("out").innerHTML='<p class="msg">'+(L==="zh"?"正在細心讀你寫的內容…":"Reading what you wrote…")+'</p>';
+ const lang=L==="zh"?"Traditional Chinese as used in Hong Kong (warm, natural, light Cantonese flavour is fine)":"English";
+ const prompt=`You are a warm, grounded supporter inspired by Hong Kong's 陪我講 Shall We Talk mental wellness campaign. Someone wrote:
+"""${t}"""
+Respond using a cognitive-reframing approach, specific to THEIR exact situation (mention the real details they gave — e.g. boss, overtime, family member). No generic slogans, no toxic positivity, no lecturing.
+Return JSON only, all text in ${lang}:
+{"crisis":boolean (true if any sign of suicide/self-harm/danger),
+"feeling":"2-4 word name of the likely feeling",
+"validate":"1 sentence acknowledging why this is hard, specific to their situation",
+"reframe":"1-2 sentences offering a kinder, realistic other way to see it",
+"actions":["2 or 3 small concrete things they can do today for THIS situation, e.g. a polite script to say, a boundary, a micro-break"],
+"verse":{"text":"a short, accurately quoted Bible verse that fits (Chinese Union Version 和合本 wording for Chinese, KJV for English)","ref":"book chapter:verse"},
+"story":"one-sentence Bible story that relates, with reference",
+"meme":"id of the ONE meme below whose meaning best fits, or empty"}
+Memes: ${JSON.stringify(MEMES.map(m=>({id:m.id,meaning:m.mean[0]})))}`;
+ try{
+  const r=await sampler.json(prompt,{signal:busy.signal,cache:false});
+  if(r.crisis){last={crisis:1};return render()}
+  last={ai:r,key:(Object.values(SIT).find(x=>x.k.some(w=>lo.includes(w.toLowerCase())))||{}).f};
+  hist.unshift({t:t.slice(0,80),m:[r.reframe,r.reframe]});hist=hist.slice(0,6);
+  try{localStorage.setItem("ls-hist",JSON.stringify(hist))}catch(e){}
+  render();draw();
+ }catch(e){if(e?.code==="cancelled")return;{const a=localAI(t);last={ai:a,local:1,key:a.key};render();}}
+}
+function runLocal(){
+ const t=$("in").value.trim(),lo=t.toLowerCase();
+ if(!t){last={empty:1};return render()}
+ if(CRISIS.some(w=>lo.includes(w))){last={crisis:1};return render()}
+ const hit=Object.values(G).filter(g=>g.k.some(w=>lo.includes(w)));
+ const main=hit.length?pick(hit):GEN;
+ const f=FAITH[main.label[0]];last={tags:(hit.length?hit:[GEN]).map(g=>g.label),m:pick(main.m),s:main.s,f:Math.random()<.5?f.v:f.st};
+ hist.unshift({t:t.slice(0,80),m:last.m});hist=hist.slice(0,6);
+ try{localStorage.setItem("ls-hist",JSON.stringify(hist))}catch(e){}
+ render();draw();
+}
+function render(){const u=UI[L],o=$("out");if(!last){o.innerHTML="";return}
+ if(last.empty){o.innerHTML='<p class="msg">'+u.empty+'</p>';return}
+ if(last.crisis){o.innerHTML='<div class="care">'+u.care+'</div>';return}
+ if(last.ai){const r=last.ai;if(!last.pic)last.pic=pickMeme(last.key,r.sit,$("in").value,r.meme);const mm=last.pic?.meme,zi=I(L);o.innerHTML=(last.pic?'<figure class="memebox">'+(/\.(mp4|webm|mov)$/i.test(decodeURI(last.pic.url))?'<video class="pic" src="'+last.pic.url+'" autoplay loop muted playsinline></video>':'<img class="pic" alt="" src="'+last.pic.url+'">')+(mm?'<figcaption><b>'+esc(mm.line[zi])+'</b><span>'+esc(mm.mean[zi])+' · '+esc(mm.src[zi])+'</span></figcaption>':'')+'</figure>':'')+'<div class="tags"><span class="tag">'+esc(r.feeling)+'</span></div><p class="step" style="margin-bottom:8px">'+esc(r.validate)+'</p><p class="msg">'+esc(r.reframe)+'</p><p class="step"><b>'+u.try+'</b></p><ul class="acts">'+(r.actions||[]).map(a=>'<li>'+esc(a)+'</li>').join("")+'</ul>'+(r.verse?'<p class="faith">'+esc(r.verse.text)+' — '+esc(r.verse.ref)+(r.story?'<br>'+esc(r.story):'')+'</p>':'')+(last.local?'<p class="tag" style="display:inline-block;margin-top:10px">'+(L==="zh"?"離線模式":"Offline mode")+'</p>':'');return}
+ o.innerHTML='<div class="tags">'+last.tags.map(x=>'<span class="tag">'+x[I(L)]+'</span>').join("")+'</div><p class="msg">'+last.m[I(L)]+'</p><p class="step"><b>'+u.try+'</b> '+last.s[I(L)]+'</p><p class="faith">'+last.f[I(L)]+'</p>';}
+function draw(){hist=hist.filter(h=>Array.isArray(h.m));$("histWrap").hidden=!hist.length;$("hist").innerHTML="";
+ hist.forEach(h=>{const li=document.createElement("li"),i=document.createElement("i");i.textContent="“"+h.t+"”";li.append(i,h.m[I(L)]);$("hist").append(li)});}
+$("go").onclick=run;$("again").onclick=run;
+$("lang").onclick=()=>{last=null;L=L==="zh"?"en":"zh";try{localStorage.setItem("ls-lang",L)}catch(e){}if(L==="zh"&&$("in").value.startsWith("I'm so tired"))$("in").value="返工好攰，老闆成日催，覺得自己好冇用。";applyUI()};
+if(L==="zh")$("in").value="返工好攰，老闆成日催，覺得自己好冇用。";
+applyUI();setTimeout(run,0);
+</script>
+</body></html>
